@@ -19,6 +19,7 @@ impl Vec3{
 }
 
 // a 3x3 matrix
+#[derive(Copy,Clone)]
 pub struct Mat3{
     pub values: [[f32;3];3]
 }
@@ -95,12 +96,18 @@ pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
     // receive the transmissions, signifying those threads have finished
     // when we receive 9 transmissions,
     // all 9 values in the matrix have been computed
-    for _ in 0..10{
+    for _ in 0..9{
         rx.recv().unwrap();
     }
 
-    // hack to return the new matrix
-    let guard = result.clone().into_inner().ok().unwrap();
+    // hack to get the matrix out of the arc+mutex
+    // don't try this at home kids!
+    let guard = match result.lock(){
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
 
-    guard
+    let guard2 = *guard;
+
+    guard2
 }
