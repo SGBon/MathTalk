@@ -12,8 +12,7 @@ Most languages have a way to do concurrency. Java and C++11 have threading libra
 In regards to Java, safe concurrency is achieved using synchronisation blocks/functions. Code within the blocks can only be accessed by one thread, and the other threads must wait before the block before given access to the code inside.
 
 C99 is similar. Mutexes and shared data have global visibility w.r.t. the threads. Locks on mutexes are acquired by a thread before a critical section, and released after the critical section. Threads must wait to acquire a lock on the mutex when it is currently held by another thread. There is of course a huge safety issue here: 
-1. critical sections are not an actual part of the language, rather just a fact of the code that the programmer must acknowledge
-2. Mutexes are what gets protected from race conditions, protecting critical sections is more or less a side effect
+ critical sections are not an actual part of the language, rather just a fact of the code that the programmer must acknowledge
 
 The way Rust handles thread safety will be explained later
 
