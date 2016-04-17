@@ -35,4 +35,12 @@ fn main(){
     for i in 0..3{
         println!("{} {} {}",mat_product.values[0][i],mat_product.values[1][i],mat_product.values[2][i])
     }
+
+    // scale and rotate a 3d point
+    let point = matlib::Vec3::new(1.4,3.7,0.9);
+    let model = matlib::MatXMat3(&matlib::Mat3::new_scale(2.0,1.0,3.7),&matlib::Mat3::new_rotate_y(32.0));
+
+    let srpoint = matlib::MatXVec3(&model,&point);
+    println!("Our point in space {} {} {}",point.x,point.y,point.z);
+    println!("Is now {} {} {}",srpoint.x,srpoint.y,srpoint.z);
 }

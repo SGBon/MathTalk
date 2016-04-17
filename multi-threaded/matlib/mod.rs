@@ -17,20 +17,70 @@ impl Vec3{
     }
 }
 
-// a 3x3 matrix
+/* a 3x3 matrix
+* assignment behaviour is to Copy
+* the copy and clone methods are
+* automatically generated
+*/
 #[derive(Copy,Clone)]
 pub struct Mat3{
     pub values: [[f32;3];3]
 }
 
 impl Mat3{
-    // used for constructing an empty matrix
-    pub fn new_empty() -> Mat3{
+    // constructing a diagonal matrix
+    // the diagonal will have value of val
+    // all other values will be 0
+    pub fn new_diag(val: f32) -> Mat3{
         Mat3{values:
-            [[0.0,0.0,0.0],
-            [0.0,0.0,0.0],
-            [0.0,0.0,0.0]]
+            [[val,0.0,0.0],
+            [0.0,val,0.0],
+            [0.0,0.0,val]]
         }
+    }
+
+    // construct an identity matrix
+    pub fn new_identity() -> Mat3{
+        Mat3::new_diag(1.0)
+    }
+
+    // construct a scaling matrix
+    pub fn new_scale(sx:f32, sy:f32, sz:f32) -> Mat3{
+        Mat3{values:
+            [[sx,0.0,0.0],
+            [0.0,sy,0.0],
+            [0.0,0.0,sz]]
+        }
+    }
+
+    // construct a x-axis rotation matrix
+    pub fn new_rotate_x(angle: f32) -> Mat3{
+        Mat3{values:
+            [[1.0,0.0,0.0],
+            [0.0,angle.cos(),-angle.sin()],
+            [0.0,angle.sin(),angle.cos()]]
+        }
+    }
+    // construct a y-axis rotation matrix
+    pub fn new_rotate_y(angle: f32) -> Mat3{
+        Mat3{values:
+            [[angle.cos(),0.0,angle.sin()],
+            [0.0,1.0,0.0],
+            [-angle.sin(),0.0,angle.cos()]]
+        }
+    }
+    // construct a z-axis rotation matrix
+    pub fn new_rotate_z(angle: f32) -> Mat3{
+        Mat3{values:
+            [[angle.cos(),-angle.sin(),0.0],
+            [angle.sin(),angle.cos(),0.0],
+            [0.0,0.0,1.0]]
+        }
+    }
+
+    // construct an empty matrix
+    pub fn new_empty() -> Mat3{
+        Mat3::new_diag(0.0)
     }
 }
 
@@ -40,7 +90,7 @@ pub fn dot(vec1:&Vec3,vec2:&Vec3) -> f32{
 }
 
 // matrix multiplication of a 3x3 matrix with a 3 dimensional vector (1x3 matrix)
-// returns the result as a vec3
+// returns the result as a Vec3
 #[allow(non_snake_case)]
 pub fn MatXVec3(mat: &Mat3,vec: &Vec3) -> Vec3{
     let mut result = Vec3::new(0.0,0.0,0.0);
@@ -94,11 +144,11 @@ pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
     let mut result = Mat3::new_empty();
 
     /*
-     * receive transmitions from each thread
-     * each transmition contains the i and j indicese
-     * and the computed value for the new matrix
-     * when all 9 transmitions have been received
-     * we finish and return the resulting matrix
+    * receive transmitions from each thread
+    * each transmition contains the i and j indicese
+    * and the computed value for the new matrix
+    * when all 9 transmitions have been received
+    * we finish and return the resulting matrix
     **/
     for _ in 0..9{
         let pair = rx.recv().unwrap();
