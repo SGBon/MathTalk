@@ -1,5 +1,4 @@
 use std::thread;
-use std::sync::{Mutex,Arc};
 use std::sync::mpsc;
 
 // library of matrix and vector functions
@@ -65,9 +64,8 @@ pub fn MatXVec3(mat: &Mat3,vec: &Vec3) -> Vec3{
 // returns the result as a Mat3
 #[allow(non_snake_case)]
 pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
-    let result = Arc::new(Mutex::new(Mat3::new_empty()));
     let val1 = mat1.values; // values in first matrix
-    let val2 =  mat2.values; // values in second matrix
+    let val2 = mat2.values; // values in second matrix
 
     let (tx, rx) = mpsc::channel(); // create a transmitter and receiver pair
 
@@ -80,34 +78,33 @@ pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
             let mvec1 = Vec3::new(val1[i][0],val1[i][1],val1[i][2]); // row from first matrix
             let mvec2 = Vec3::new(val2[0][j],val2[1][j],val2[2][j]); // column from second matrix
 
-            let (result,tx) = (result.clone(),tx.clone());
+            // clone our transmitter for our row/column channel
+            let tx = tx.clone();
 
             // finally, take the dot product of the vectors
             // in their own threads
             thread::spawn(move ||{
-                let mut result = result.lock().unwrap();
-                result.values[j][i] = dot(&mvec1,&mvec2); // take dot product of row/column pair
-
-                tx.send(()).unwrap(); // transmit something for our receiever to pick up
+                let val = dot(&mvec1,&mvec2); // compute the dot product of the row/column pair
+                tx.send((val,i,j)).unwrap(); // transmit something for our receiever to pick up
             });
         }
     }
 
-    // receive the transmissions, signifying those threads have finished
-    // when we receive 9 transmissions,
-    // all 9 values in the matrix have been computed
+    // declare our resulting matrix
+    let mut result = Mat3::new_empty();
+
+    /*
+     * receive transmitions from each thread
+     * each transmition contains the i and j indicese
+     * and the computed value for the new matrix
+     * when all 9 transmitions have been received
+     * we finish and return the resulting matrix
+    **/
     for _ in 0..9{
-        rx.recv().unwrap();
+        let pair = rx.recv().unwrap();
+        // values[j][i] = val
+        result.values[pair.2][pair.1] = pair.0;
     }
 
-    // hack to get the matrix out of the arc+mutex
-    // don't try this at home kids!
-    let guard = match result.lock(){
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    };
-
-    let guard2 = *guard;
-
-    guard2
+    result
 }
