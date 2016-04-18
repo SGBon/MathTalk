@@ -15,18 +15,25 @@ impl Vec3{
     pub fn new(x:f32,y:f32,z:f32) -> Vec3 {
         Vec3{x: x, y: y, z: z}
     }
+
+    // return the magnitude of the vector
+    pub fn length(&self) -> f32{
+        ((self.x*self.x)+(self.y+self.y)+(self.z+self.z)).sqrt()
+    }
+
+    // return a normalized form of the vector
+    pub fn normalize(&self) -> Vec3{
+        let len = &self.length();
+        Vec3{x:self.x/len,y:self.y/len,z:self.z/len}
+    }
 }
 
-/* a 3x3 matrix
-* assignment behaviour is to Copy
-* the copy and clone methods are
-* automatically generated
-*/
-#[derive(Copy,Clone)]
+// 3x3 matrix
 pub struct Mat3{
     pub values: [[f32;3];3]
 }
 
+#[allow(dead_code)]
 impl Mat3{
     // constructing a diagonal matrix
     // the diagonal will have value of val
@@ -135,7 +142,7 @@ pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
             // in their own threads
             thread::spawn(move ||{
                 let val = dot(&mvec1,&mvec2); // compute the dot product of the row/column pair
-                tx.send((val,i,j)).unwrap(); // transmit something for our receiever to pick up
+                tx.send((val,i,j)).unwrap(); // transmit the i,j result to the receiver
             });
         }
     }
@@ -152,7 +159,7 @@ pub fn MatXMat3 (mat1: &Mat3,mat2: &Mat3) -> Mat3{
     **/
     for _ in 0..9{
         let pair = rx.recv().unwrap();
-        // values[j][i] = val
+        // put the result into i,j of the result matrix
         result.values[pair.2][pair.1] = pair.0;
     }
 

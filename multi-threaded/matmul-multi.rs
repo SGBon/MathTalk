@@ -43,4 +43,7 @@ fn main(){
     let srpoint = matlib::MatXVec3(&model,&point);
     println!("Our point in space {} {} {}",point.x,point.y,point.z);
     println!("Is now {} {} {}",srpoint.x,srpoint.y,srpoint.z);
+
+    let nsrpoint = srpoint.normalize();
+    println!("And the normalized version of that point (if it was a vector) is: {} {} {}",nsrpoint.x,nsrpoint.y,nsrpoint.z);
 }
